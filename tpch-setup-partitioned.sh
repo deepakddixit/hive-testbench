@@ -72,7 +72,7 @@ SCHEMA_TYPE=partitioned
 
 DATABASE=tpch_${SCHEMA_TYPE}_orc_${SCALE}
 MAX_REDUCERS=2600 # ~7 years of data
-REDUCERS=$((test ${SCALE} -gt ${MAX_REDUCERS} && echo ${MAX_REDUCERS}) || echo ${SCALE})
+REDUCERS=$SCALE
 
 for t in ${TABLES}
 do
