@@ -24,7 +24,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Tables in the TPC-H schema.
-TABLES="part partsupp supplier customer orders lineitem nation region"
+#TABLES="part partsupp supplier customer orders lineitem nation region"
+TABLES="nation region"
 
 # Get the parameters.
 SCALE=$1
@@ -74,7 +75,15 @@ else
 	SCHEMA_TYPE=partitioned
 fi
 
-DATABASE=tpch_${SCHEMA_TYPE}_orc_${SCALE}
+# Create the partitioned and bucketed tables.
+if [ "X$FORMAT" = "X" ]; then
+        FORMAT=orc
+fi
+
+echo "Using format $FORMAT"
+
+
+DATABASE=tpch_${SCHEMA_TYPE}_${FORMAT}_${SCALE}
 MAX_REDUCERS=2600 # ~7 years of data
 REDUCERS=$((test ${SCALE} -gt ${MAX_REDUCERS} && echo ${MAX_REDUCERS}) || echo ${SCALE})
 
@@ -85,7 +94,7 @@ do
 	    -d DB=${DATABASE} \
 	    -d SOURCE=tpch_text_${SCALE} -d BUCKETS=${BUCKETS} \
             -d SCALE=${SCALE} -d REDUCERS=${REDUCERS} \
-	    -d FILE=orc"
+	    -d FILE=${FORMAT}"
 	runcommand "$COMMAND"
 	if [ $? -ne 0 ]; then
 		echo "Command failed, try 'export DEBUG_SCRIPT=ON' and re-running"
